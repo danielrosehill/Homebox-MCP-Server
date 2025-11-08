@@ -390,11 +390,13 @@ const tools: Tool[] = [
       properties: {
         name: {
           type: "string",
-          description: "Item name",
+          description: "Item name (max 255 characters)",
+          maxLength: 255,
         },
         description: {
           type: "string",
-          description: "Item description",
+          description: "Item description (max 1000 characters)",
+          maxLength: 1000,
         },
         locationId: {
           type: "string",
@@ -415,19 +417,23 @@ const tools: Tool[] = [
         },
         serialNumber: {
           type: "string",
-          description: "Serial number of the item",
+          description: "Serial number of the item (max 255 characters)",
+          maxLength: 255,
         },
         modelNumber: {
           type: "string",
-          description: "Model number of the item",
+          description: "Model number of the item (max 255 characters)",
+          maxLength: 255,
         },
         manufacturer: {
           type: "string",
-          description: "Manufacturer of the item",
+          description: "Manufacturer of the item (max 255 characters)",
+          maxLength: 255,
         },
         notes: {
           type: "string",
-          description: "Additional notes about the item",
+          description: "Additional notes about the item (max 1000 characters)",
+          maxLength: 1000,
         },
         purchasePrice: {
           type: "number",
@@ -453,11 +459,13 @@ const tools: Tool[] = [
         },
         name: {
           type: "string",
-          description: "Item name",
+          description: "Item name (max 255 characters)",
+          maxLength: 255,
         },
         description: {
           type: "string",
-          description: "Item description",
+          description: "Item description (max 1000 characters)",
+          maxLength: 1000,
         },
         locationId: {
           type: "string",
@@ -478,19 +486,23 @@ const tools: Tool[] = [
         },
         serialNumber: {
           type: "string",
-          description: "Serial number of the item",
+          description: "Serial number of the item (max 255 characters)",
+          maxLength: 255,
         },
         modelNumber: {
           type: "string",
-          description: "Model number of the item",
+          description: "Model number of the item (max 255 characters)",
+          maxLength: 255,
         },
         manufacturer: {
           type: "string",
-          description: "Manufacturer of the item",
+          description: "Manufacturer of the item (max 255 characters)",
+          maxLength: 255,
         },
         notes: {
           type: "string",
-          description: "Additional notes about the item",
+          description: "Additional notes about the item (max 1000 characters)",
+          maxLength: 1000,
         },
         purchasePrice: {
           type: "number",
@@ -648,6 +660,53 @@ const tools: Tool[] = [
         },
       },
       required: ["itemId"],
+    },
+  },
+  {
+    name: "add_item_field",
+    description:
+      "Add or update a custom field on an item. Custom fields can store additional metadata like ISBN, serial numbers, or any other custom data. Supports text, number, boolean, and time field types.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        itemId: {
+          type: "string",
+          description: "The ID (UUID) of the item to add/update the field on",
+        },
+        fieldName: {
+          type: "string",
+          description: "The name of the custom field (e.g., 'ISBN', 'Color', 'Purchase Date')",
+        },
+        fieldType: {
+          type: "string",
+          description: "The type of field: 'text', 'number', 'boolean', or 'time'",
+          enum: ["text", "number", "boolean", "time"],
+        },
+        value: {
+          type: ["string", "number", "boolean"],
+          description: "The value for the field. Type should match fieldType (string for text/time, number for number, boolean for boolean)",
+        },
+      },
+      required: ["itemId", "fieldName", "fieldType", "value"],
+    },
+  },
+  {
+    name: "remove_item_field",
+    description:
+      "Remove a custom field from an item by field name.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        itemId: {
+          type: "string",
+          description: "The ID (UUID) of the item to remove the field from",
+        },
+        fieldName: {
+          type: "string",
+          description: "The name of the custom field to remove",
+        },
+      },
+      required: ["itemId", "fieldName"],
     },
   },
 ];
@@ -939,11 +998,40 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
         // Get the current item details first
         const currentItem = await apiRequest(`/v1/items/${itemId}`, "GET");
 
-        // Update the item with the new parent
-        const body = {
-          name: currentItem.name, // Required field
-          parentId: parentId,
+        // Build the full item object with the new parent
+        // The Homebox API requires the complete item object for PUT requests
+        const body: any = {
+          id: currentItem.id,
+          name: currentItem.name,
+          description: currentItem.description || "",
+          quantity: currentItem.quantity || 1,
+          insured: currentItem.insured || false,
+          archived: currentItem.archived || false,
+          locationId: currentItem.location?.id || currentItem.locationId,
+          labelIds: currentItem.labels?.map((l: any) => l.id) || currentItem.labelIds || [],
+          parentId: parentId, // Set the new parent
+          assetId: currentItem.assetId,
+          syncChildItemsLocations: currentItem.syncChildItemsLocations || false,
+          serialNumber: currentItem.serialNumber || "",
+          modelNumber: currentItem.modelNumber || "",
+          manufacturer: currentItem.manufacturer || "",
+          lifetimeWarranty: currentItem.lifetimeWarranty || false,
+          warrantyExpires: currentItem.warrantyExpires || "0001-01-01T00:00:00Z",
+          warrantyDetails: currentItem.warrantyDetails || "",
+          purchaseTime: currentItem.purchaseTime || "0001-01-01T00:00:00Z",
+          purchaseFrom: currentItem.purchaseFrom || "",
+          purchasePrice: currentItem.purchasePrice || 0,
+          soldTime: currentItem.soldTime || "0001-01-01T00:00:00Z",
+          soldTo: currentItem.soldTo || "",
+          soldPrice: currentItem.soldPrice || 0,
+          soldNotes: currentItem.soldNotes || "",
+          notes: currentItem.notes || "",
         };
+
+        // Include fields if they exist
+        if (currentItem.fields) {
+          body.fields = currentItem.fields;
+        }
 
         const result = await apiRequest(`/v1/items/${itemId}`, "PUT", body);
 
@@ -963,11 +1051,40 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
         // Get the current item details first
         const currentItem = await apiRequest(`/v1/items/${itemId}`, "GET");
 
-        // Update the item with null parent
-        const body = {
-          name: currentItem.name, // Required field
-          parentId: null,
+        // Build the full item object with null parent
+        // The Homebox API requires the complete item object for PUT requests
+        const body: any = {
+          id: currentItem.id,
+          name: currentItem.name,
+          description: currentItem.description || "",
+          quantity: currentItem.quantity || 1,
+          insured: currentItem.insured || false,
+          archived: currentItem.archived || false,
+          locationId: currentItem.location?.id || currentItem.locationId,
+          labelIds: currentItem.labels?.map((l: any) => l.id) || currentItem.labelIds || [],
+          parentId: null, // Remove the parent
+          assetId: currentItem.assetId,
+          syncChildItemsLocations: currentItem.syncChildItemsLocations || false,
+          serialNumber: currentItem.serialNumber || "",
+          modelNumber: currentItem.modelNumber || "",
+          manufacturer: currentItem.manufacturer || "",
+          lifetimeWarranty: currentItem.lifetimeWarranty || false,
+          warrantyExpires: currentItem.warrantyExpires || "0001-01-01T00:00:00Z",
+          warrantyDetails: currentItem.warrantyDetails || "",
+          purchaseTime: currentItem.purchaseTime || "0001-01-01T00:00:00Z",
+          purchaseFrom: currentItem.purchaseFrom || "",
+          purchasePrice: currentItem.purchasePrice || 0,
+          soldTime: currentItem.soldTime || "0001-01-01T00:00:00Z",
+          soldTo: currentItem.soldTo || "",
+          soldPrice: currentItem.soldPrice || 0,
+          soldNotes: currentItem.soldNotes || "",
+          notes: currentItem.notes || "",
         };
+
+        // Include fields if they exist
+        if (currentItem.fields) {
+          body.fields = currentItem.fields;
+        }
 
         const result = await apiRequest(`/v1/items/${itemId}`, "PUT", body);
 
@@ -976,6 +1093,147 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
             {
               type: "text",
               text: `Parent relationship removed successfully!\n\n${formatItemResponse(result)}`,
+            },
+          ],
+        };
+      }
+
+      case "add_item_field": {
+        const itemId = String(args.itemId);
+        const fieldName = String(args.fieldName);
+        const fieldType = String(args.fieldType);
+        const value = args.value;
+
+        // Get the current item details first
+        const currentItem = await apiRequest(`/v1/items/${itemId}`, "GET");
+
+        // Prepare the field object based on type
+        const newField: any = {
+          id: null, // null for new fields
+          name: fieldName,
+          type: fieldType,
+          textValue: fieldType === "text" || fieldType === "time" ? String(value) : "",
+          numberValue: fieldType === "number" ? Number(value) : 0,
+          booleanValue: fieldType === "boolean" ? Boolean(value) : false,
+          timeValue: fieldType === "time" ? String(value) : null,
+        };
+
+        // Get existing fields or initialize empty array
+        let fields = currentItem.fields || [];
+
+        // Check if field already exists and update it, otherwise add new
+        const existingFieldIndex = fields.findIndex((f: any) => f.name === fieldName);
+        if (existingFieldIndex >= 0) {
+          // Update existing field, preserve its ID
+          newField.id = fields[existingFieldIndex].id;
+          fields[existingFieldIndex] = newField;
+        } else {
+          // Add new field
+          fields.push(newField);
+        }
+
+        // Build the full item object with updated fields
+        const body: any = {
+          id: currentItem.id,
+          name: currentItem.name,
+          description: currentItem.description || "",
+          quantity: currentItem.quantity || 1,
+          insured: currentItem.insured || false,
+          archived: currentItem.archived || false,
+          locationId: currentItem.location?.id || currentItem.locationId,
+          labelIds: currentItem.labels?.map((l: any) => l.id) || currentItem.labelIds || [],
+          parentId: currentItem.parent?.id || currentItem.parentId || null,
+          assetId: currentItem.assetId,
+          syncChildItemsLocations: currentItem.syncChildItemsLocations || false,
+          serialNumber: currentItem.serialNumber || "",
+          modelNumber: currentItem.modelNumber || "",
+          manufacturer: currentItem.manufacturer || "",
+          lifetimeWarranty: currentItem.lifetimeWarranty || false,
+          warrantyExpires: currentItem.warrantyExpires || "0001-01-01T00:00:00Z",
+          warrantyDetails: currentItem.warrantyDetails || "",
+          purchaseTime: currentItem.purchaseTime || "0001-01-01T00:00:00Z",
+          purchaseFrom: currentItem.purchaseFrom || "",
+          purchasePrice: currentItem.purchasePrice || 0,
+          soldTime: currentItem.soldTime || "0001-01-01T00:00:00Z",
+          soldTo: currentItem.soldTo || "",
+          soldPrice: currentItem.soldPrice || 0,
+          soldNotes: currentItem.soldNotes || "",
+          notes: currentItem.notes || "",
+          fields: fields, // Include updated fields
+        };
+
+        const result = await apiRequest(`/v1/items/${itemId}`, "PUT", body);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Custom field "${fieldName}" ${existingFieldIndex >= 0 ? 'updated' : 'added'} successfully!\n\n${formatItemResponse(result)}`,
+            },
+          ],
+        };
+      }
+
+      case "remove_item_field": {
+        const itemId = String(args.itemId);
+        const fieldName = String(args.fieldName);
+
+        // Get the current item details first
+        const currentItem = await apiRequest(`/v1/items/${itemId}`, "GET");
+
+        // Filter out the field to remove
+        let fields = currentItem.fields || [];
+        const filteredFields = fields.filter((f: any) => f.name !== fieldName);
+
+        if (filteredFields.length === fields.length) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Field "${fieldName}" not found on item.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        // Build the full item object with filtered fields
+        const body: any = {
+          id: currentItem.id,
+          name: currentItem.name,
+          description: currentItem.description || "",
+          quantity: currentItem.quantity || 1,
+          insured: currentItem.insured || false,
+          archived: currentItem.archived || false,
+          locationId: currentItem.location?.id || currentItem.locationId,
+          labelIds: currentItem.labels?.map((l: any) => l.id) || currentItem.labelIds || [],
+          parentId: currentItem.parent?.id || currentItem.parentId || null,
+          assetId: currentItem.assetId,
+          syncChildItemsLocations: currentItem.syncChildItemsLocations || false,
+          serialNumber: currentItem.serialNumber || "",
+          modelNumber: currentItem.modelNumber || "",
+          manufacturer: currentItem.manufacturer || "",
+          lifetimeWarranty: currentItem.lifetimeWarranty || false,
+          warrantyExpires: currentItem.warrantyExpires || "0001-01-01T00:00:00Z",
+          warrantyDetails: currentItem.warrantyDetails || "",
+          purchaseTime: currentItem.purchaseTime || "0001-01-01T00:00:00Z",
+          purchaseFrom: currentItem.purchaseFrom || "",
+          purchasePrice: currentItem.purchasePrice || 0,
+          soldTime: currentItem.soldTime || "0001-01-01T00:00:00Z",
+          soldTo: currentItem.soldTo || "",
+          soldPrice: currentItem.soldPrice || 0,
+          soldNotes: currentItem.soldNotes || "",
+          notes: currentItem.notes || "",
+          fields: filteredFields, // Include filtered fields
+        };
+
+        const result = await apiRequest(`/v1/items/${itemId}`, "PUT", body);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Custom field "${fieldName}" removed successfully!\n\n${formatItemResponse(result)}`,
             },
           ],
         };

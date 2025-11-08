@@ -368,6 +368,12 @@ The server will return a direct clickable link like:
 > "Remove the parent from [item ID]"
 > "Take this item out of its container"
 
+### Custom Fields
+> "Add a text field called 'ISBN' with value '978-0-123456-78-9' to item [ID]"
+> "Add a number field called 'Weight' with value 2.5 to item [ID]"
+> "Add a boolean field called 'Fragile' with value true to item [ID]"
+> "Remove the field 'ISBN' from item [ID]"
+
 ### Managing Locations
 > "List all my storage locations"
 > "Create a new location called 'Workshop' under 'Garage'"
@@ -397,6 +403,8 @@ Example config:
 - `search_items` - Search for items using a query string
 - `set_item_parent` - **Set or change the parent item for an item** (creates parent-child relationship)
 - `remove_item_parent` - **Remove the parent relationship from an item**
+- `add_item_field` - **Add or update a custom field on an item** (supports text, number, boolean, time types)
+- `remove_item_field` - **Remove a custom field from an item**
 
 ### Locations
 - `list_locations` - List all storage locations

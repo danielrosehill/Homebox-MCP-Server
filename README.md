@@ -127,7 +127,9 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 
 **Note:** The MCP server automatically handles login and token refresh. You don't need to manually generate API tokens.
 
-# Screenshots
+# Screenshots For POC
+
+## LM Studio
 
 ## Asset search:
 
@@ -151,7 +153,15 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 
 ---
 
-# Claude Code Demo
+## Streamlit
+
+![alt text](docs/screenshots/streamlit/2.png)
+
+![alt text](docs/screenshots/streamlit/1.png)
+
+---
+
+## Claude Code
 
 Configure by adding array with env variables to `.mcp.json` (note the trailing dot)
 

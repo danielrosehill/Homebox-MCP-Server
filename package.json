@@ -1,0 +1,36 @@
+{
+  "name": "homebox-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Homebox inventory management system",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "homebox-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielrosehill/Homebox-MCP-1125.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielrosehill/Homebox-MCP-1125/issues"
+  },
+  "homepage": "https://github.com/danielrosehill/Homebox-MCP-1125#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.21.1",
+    "dotenv": "^17.2.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

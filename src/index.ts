@@ -804,28 +804,44 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
 
       case "update_item": {
         const itemId = String(args.id);
-        const body: any = {};
 
-        if (args.name) body.name = String(args.name);
-        if (args.description) body.description = String(args.description);
-        if (args.locationId) body.locationId = String(args.locationId);
-        if (args.parentId !== undefined) {
-          // Allow setting parentId to null to remove parent relationship
-          body.parentId = args.parentId === null ? null : String(args.parentId);
+        // Get the current item details first
+        const currentItem = await apiRequest(`/v1/items/${itemId}`, "GET");
+
+        // Build the full item object with updates
+        // The Homebox API requires the complete item object for PUT requests
+        const body: any = {
+          id: currentItem.id,
+          name: args.name !== undefined ? String(args.name) : currentItem.name,
+          description: args.description !== undefined ? String(args.description) : (currentItem.description || ""),
+          quantity: args.quantity !== undefined ? Number(args.quantity) : (currentItem.quantity || 1),
+          insured: currentItem.insured || false,
+          archived: currentItem.archived || false,
+          locationId: args.locationId !== undefined ? String(args.locationId) : (currentItem.location?.id || currentItem.locationId),
+          labelIds: args.labelIds !== undefined ? args.labelIds : (currentItem.labels?.map((l: any) => l.id) || currentItem.labelIds || []),
+          parentId: args.parentId !== undefined ? (args.parentId === null ? null : String(args.parentId)) : (currentItem.parent?.id || currentItem.parentId || null),
+          assetId: currentItem.assetId,
+          syncChildItemsLocations: currentItem.syncChildItemsLocations || false,
+          serialNumber: args.serialNumber !== undefined ? String(args.serialNumber) : (currentItem.serialNumber || ""),
+          modelNumber: args.modelNumber !== undefined ? String(args.modelNumber) : (currentItem.modelNumber || ""),
+          manufacturer: args.manufacturer !== undefined ? String(args.manufacturer) : (currentItem.manufacturer || ""),
+          lifetimeWarranty: currentItem.lifetimeWarranty || false,
+          warrantyExpires: currentItem.warrantyExpires || "0001-01-01T00:00:00Z",
+          warrantyDetails: currentItem.warrantyDetails || "",
+          purchaseTime: currentItem.purchaseTime || "0001-01-01T00:00:00Z",
+          purchaseFrom: currentItem.purchaseFrom || "",
+          purchasePrice: args.purchasePrice !== undefined ? Number(args.purchasePrice) : (currentItem.purchasePrice || 0),
+          soldTime: currentItem.soldTime || "0001-01-01T00:00:00Z",
+          soldTo: currentItem.soldTo || "",
+          soldPrice: args.soldPrice !== undefined ? Number(args.soldPrice) : (currentItem.soldPrice || 0),
+          soldNotes: currentItem.soldNotes || "",
+          notes: args.notes !== undefined ? String(args.notes) : (currentItem.notes || ""),
+        };
+
+        // Include fields if they exist
+        if (currentItem.fields) {
+          body.fields = currentItem.fields;
         }
-        if (args.labelIds) body.labelIds = args.labelIds;
-        if (args.quantity !== undefined)
-          body.quantity = Number(args.quantity);
-        if (args.serialNumber)
-          body.serialNumber = String(args.serialNumber);
-        if (args.modelNumber) body.modelNumber = String(args.modelNumber);
-        if (args.manufacturer)
-          body.manufacturer = String(args.manufacturer);
-        if (args.notes) body.notes = String(args.notes);
-        if (args.purchasePrice !== undefined)
-          body.purchasePrice = Number(args.purchasePrice);
-        if (args.soldPrice !== undefined)
-          body.soldPrice = Number(args.soldPrice);
 
         const result = await apiRequest(`/v1/items/${itemId}`, "PUT", body);
         return {

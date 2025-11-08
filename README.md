@@ -327,7 +327,7 @@ The server automatically uses Homebox's `#` prefix for asset ID searches, so que
 
 The server will return a direct clickable link like:
 ```
-🔗 DIRECT LINK: http://10.0.0.4:7745/item/cd8dee2f-9f5b-4f10-a05b-c952c1deafc5
+ DIRECT LINK: http://10.0.0.4:7745/item/cd8dee2f-9f5b-4f10-a05b-c952c1deafc5
 ```
 
 ### Searching
@@ -355,13 +355,12 @@ The server will return a direct clickable link like:
 
 ## Local AI Setup
 
-For complete instructions on using this MCP server with local AI models, see:
+Example config:
 
 - **[Local AI Stack Setup Guide](docs/examples/local-ai-stack/README.md)** - Complete setup for LM Studio + Qwen 3 8B
 - **[Client Configuration Examples](docs/examples/local-ai-stack/client-config-examples.md)** - Configurations for Continue.dev, Cline, Ollama, and more
 - **[System Prompt for AI Models](docs/setup/system-prompt.md)** - Recommended system prompt for AI assistants that includes API fallback instructions
 
-Quick summary: Any local LLM with function calling support works (Qwen 3 8B, Llama 3.1, Mistral, etc.).
 
 ## Available Tools
 
@@ -399,36 +398,6 @@ npm run build
 npm start
 ```
 
-## API Documentation
-
-This MCP server is built on the Homebox API. For full API documentation, see:
-- [Homebox API Documentation](https://homebox.software/en/api/)
-- [Complete API Endpoints Reference](docs/api-reference/endpoints-table.md) - Full list of all 64 available API endpoints
-- Local API docs in `docs/api-reference/` directory
-
-**Note:** The current MCP implementation provides tools for core functionality (items, locations, labels). Additional functionality planned includes:
-- **Maintenance Tracking** - Full CRUD operations for maintenance logs and entries
-- **Attachments Management** - Upload, update, and delete item attachments
-- **Custom Fields** - Manage custom field names and values
-- **Statistics & Reporting** - Access group statistics, purchase price analysis, and bill of materials exports
-- **QR Code & Label Generation** - Generate QR codes and printable labels for assets, items, and locations
-- **Notifiers** - Configure and test notification systems
-
-See the [endpoints reference](docs/api-reference/endpoints-table.md) for all available API capabilities.
-
-## Understanding Asset IDs vs UUIDs
-
-Homebox uses **two identifiers** for each item:
-
-1. **Asset ID** - Human-friendly label (e.g., `003-168`, `002-145`)
-   - What you use to search and identify items
-   - Customizable format
-   - Easy to remember
-
-2. **UUID (id)** - System identifier (e.g., `cd8dee2f-9f5b-4f10-a05b-c952c1deafc5`)
-   - Used internally by Homebox
-   - Used in all URLs
-   - Never changes
 
 **Example:**
 ```
@@ -439,29 +408,6 @@ When you search for "003-168":
 ```
 
 **Database Schema:** For detailed database schema information and ERD diagrams, see the `docs/db-schema/` directory which includes both PDF and PNG exports of the full schema and items-specific schema.
-
-## Troubleshooting
-
-### Connection Issues
-- Verify your Homebox instance is accessible at the configured URL
-- Check that your API token is valid and hasn't expired
-- Ensure there are no firewall rules blocking access
-
-### Authentication Errors
-- Verify your username (email) and password are correct
-- Check if your Homebox account is active and not locked
-- The server automatically refreshes tokens, so temporary auth issues should resolve automatically
-
-### Tool Execution Errors
-- Check the MCP server logs for detailed error messages
-- Verify that the item/location/label IDs are valid UUIDs
-
-### "Can't generate clickable link" Issues
-- The MCP server **does** return direct links for all items
-- **Use the `get_item_link` tool** - it's specifically designed for getting links!
-- Try asking: "Get the link for asset 003-168" or "What's the link to [item name]?"
-- Links use UUIDs (not Asset IDs) - this is by Homebox's design
-- If your AI client doesn't show links, it may be summarizing the response
 
 ## License
 

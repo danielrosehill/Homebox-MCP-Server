@@ -616,6 +616,40 @@ const tools: Tool[] = [
       required: ["query"],
     },
   },
+  {
+    name: "set_item_parent",
+    description:
+      "Set or change the parent item for an item. This creates a parent-child relationship where the item becomes a child of another item (e.g., putting an item inside a box).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        itemId: {
+          type: "string",
+          description: "The ID (UUID) of the item to set the parent for (the child item)",
+        },
+        parentId: {
+          type: "string",
+          description: "The ID (UUID) of the parent item that will contain this item",
+        },
+      },
+      required: ["itemId", "parentId"],
+    },
+  },
+  {
+    name: "remove_item_parent",
+    description:
+      "Remove the parent relationship from an item. This makes the item no longer a child of another item.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        itemId: {
+          type: "string",
+          description: "The ID (UUID) of the item to remove the parent from",
+        },
+      },
+      required: ["itemId"],
+    },
+  },
 ];
 
 // Handle tool listing
@@ -896,6 +930,55 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
         }
 
         return formatGetItemLinkResponse(result, originalQuery);
+      }
+
+      case "set_item_parent": {
+        const itemId = String(args.itemId);
+        const parentId = String(args.parentId);
+
+        // Get the current item details first
+        const currentItem = await apiRequest(`/v1/items/${itemId}`, "GET");
+
+        // Update the item with the new parent
+        const body = {
+          name: currentItem.name, // Required field
+          parentId: parentId,
+        };
+
+        const result = await apiRequest(`/v1/items/${itemId}`, "PUT", body);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Parent relationship updated successfully!\n\n${formatItemResponse(result)}`,
+            },
+          ],
+        };
+      }
+
+      case "remove_item_parent": {
+        const itemId = String(args.itemId);
+
+        // Get the current item details first
+        const currentItem = await apiRequest(`/v1/items/${itemId}`, "GET");
+
+        // Update the item with null parent
+        const body = {
+          name: currentItem.name, // Required field
+          parentId: null,
+        };
+
+        const result = await apiRequest(`/v1/items/${itemId}`, "PUT", body);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Parent relationship removed successfully!\n\n${formatItemResponse(result)}`,
+            },
+          ],
+        };
       }
 
       default:

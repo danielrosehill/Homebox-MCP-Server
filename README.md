@@ -59,6 +59,25 @@ npm install -g homebox-mcp
 
 **Note:** This is currently a proof-of-concept/work in progress. Features may change and improvements are ongoing.
 
+### Updating
+
+To update to the latest version from npm:
+
+**Linux/macOS:**
+```bash
+./update.sh
+```
+
+**Windows:**
+```cmd
+update.bat
+```
+
+Or manually:
+```bash
+npm update -g homebox-mcp
+```
+
 ### Option 2: Install from Source
 
 1. Clone this repository:
@@ -342,8 +361,12 @@ The server will return a direct clickable link like:
 ### Updating Items
 > "Update the quantity of item [ID] to 5"
 > "Change the location of my laptop to the office"
-> "Set the parent item of [item ID] to [parent item ID]"
-> "Remove the parent item from [item ID]" (set parentId to null)
+
+### Parent-Child Item Relationships
+> "Set the parent of [item ID] to [parent item ID]"
+> "Move this item into that box" (requires item IDs)
+> "Remove the parent from [item ID]"
+> "Take this item out of its container"
 
 ### Managing Locations
 > "List all my storage locations"
@@ -372,6 +395,8 @@ Example config:
 - `update_item` - Update an existing item
 - `delete_item` - Delete an item
 - `search_items` - Search for items using a query string
+- `set_item_parent` - **Set or change the parent item for an item** (creates parent-child relationship)
+- `remove_item_parent` - **Remove the parent relationship from an item**
 
 ### Locations
 - `list_locations` - List all storage locations

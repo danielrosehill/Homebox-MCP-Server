@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "homebox": {
+      "command": "node",
+      "args": [
+        "/path/to/homebox-mcp-server/build/index.js"
+      ],
+      "env": {
+        "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
+        "HOMEBOX_WAN_URL": "https://homebox.yourdomain.com",
+        "HOMEBOX_USERNAME": "your_email@example.com",
+        "HOMEBOX_PASSWORD": "your_password"
+      }
+    }
+  }
+}

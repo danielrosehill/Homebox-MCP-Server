@@ -12,6 +12,8 @@ A Model Context Protocol (MCP) server for interacting with [Homebox](https://hom
 
 This MCP server enables AI assistants (like Claude or LM Studio) to interact with your Homebox instance using natural language. You can manage your inventory, create items, update locations, search for items, and more.
 
+**Want to use this with local AI?** Check out our [Local AI Stack Example](examples/local-ai-stack/README.md) for detailed setup instructions using LM Studio + Qwen 3 8B or other local LLMs with function calling support.
+
 ## Features
 
 - **Item Management**
@@ -93,29 +95,32 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 
 **Note:** The MCP server automatically handles login and token refresh. You don't need to manually generate API tokens.
 
-## Screenshots
+# Screenshots
 
-Asset search:
+## Asset search:
 
 ![alt text](screenshots/asset-search.png)
 
-Env variable configuration:
+## Env variable configuration:
 
 ![alt text](screenshots/env-variables.png)
 
-Env variables for LAN and WAN instance URLs:
+## Env variables for LAN and WAN instance URLs:
 
 ![alt text](screenshots/lan-or-wan-env-variables.png)
 
-MCP tools (LM Studio, Qwen 3)
+## MCP tools (LM Studio, Qwen 3)
 
 ![alt text](screenshots/mcp-toolbox.png)
 
-Retrieve asset URL from asset ID:
+## Retrieve asset URL from asset ID:
 
 ![alt text](screenshots/retrieve-asset-likn-from-id.png)
 
-#### LAN Only (default)
+# MCP Configuration
+
+## LAN Only (default)
+
 ```json
 {
   "mcpServers": {
@@ -132,7 +137,14 @@ Retrieve asset URL from asset ID:
 }
 ```
 
-#### WAN Links (automatic when WAN URL is provided)
+## WAN Links (automatic when WAN URL is provided)
+
+Given that Homebox is a home inventory system  I figured that using the LAN for API calls would be preferred where avilable. Many folks also use WAN URLs, however, and use those to bind to stickers/NFC tags so that they can be read when we're not on the LAN.
+
+For that reason, I added env parameters for both the WAN and LAN  URLs and booleans for the preferred URL construction pattern for asset links.
+
+My thinking was that this would provide users with flexibility and accommodate the needs of users like me who want LAN for API but WAN for link presentation:
+
 ```json
 {
   "mcpServers": {
@@ -268,6 +280,15 @@ The server will return a direct clickable link like:
 > "Show me all my labels"
 > "Create a new label called 'Electronics' with color #0000FF"
 
+## Local AI Setup
+
+For complete instructions on using this MCP server with local AI models, see:
+
+- **[Local AI Stack Setup Guide](examples/local-ai-stack/README.md)** - Complete setup for LM Studio + Qwen 3 8B
+- **[Client Configuration Examples](examples/local-ai-stack/client-config-examples.md)** - Configurations for Continue.dev, Cline, Ollama, and more
+
+Quick summary: Any local LLM with function calling support works (Qwen 3 8B, Llama 3.1, Mistral, etc.).
+
 ## Available Tools
 
 ### Items
@@ -308,7 +329,19 @@ npm start
 
 This MCP server is built on the Homebox API. For full API documentation, see:
 - [Homebox API Documentation](https://homebox.software/en/api/)
+- [Complete API Endpoints Reference](api-reference/endpoints-table.md) - Full list of all 64 available API endpoints
 - Local API docs in `api-docs/` directory
+
+**Note:** The current MCP implementation provides tools for core functionality (items, locations, labels). Additional functionality planned includes:
+- **Parent/Child Asset Management** - Assign and remove parent assets to create hierarchical relationships
+- **Maintenance Tracking** - Full CRUD operations for maintenance logs and entries
+- **Attachments Management** - Upload, update, and delete item attachments
+- **Custom Fields** - Manage custom field names and values
+- **Statistics & Reporting** - Access group statistics, purchase price analysis, and bill of materials exports
+- **QR Code & Label Generation** - Generate QR codes and printable labels for assets, items, and locations
+- **Notifiers** - Configure and test notification systems
+
+See the [endpoints reference](api-reference/endpoints-table.md) for all available API capabilities.
 
 ## Understanding Asset IDs vs UUIDs
 
@@ -332,7 +365,7 @@ When you search for "003-168":
 - The URL is built using the UUID: http://10.0.0.4:7745/item/cd8dee2f-9f5b-4f10-a05b-c952c1deafc5
 ```
 
-For more details, see [ASSET-ID-EXPLAINED.md](./ASSET-ID-EXPLAINED.md)
+**Database Schema:** For detailed database schema information and ERD diagrams, see the `db-schema/` directory which includes both PDF and PNG exports of the full schema and items-specific schema.
 
 ## Troubleshooting
 
@@ -356,7 +389,6 @@ For more details, see [ASSET-ID-EXPLAINED.md](./ASSET-ID-EXPLAINED.md)
 - Try asking: "Get the link for asset 003-168" or "What's the link to [item name]?"
 - Links use UUIDs (not Asset IDs) - this is by Homebox's design
 - If your AI client doesn't show links, it may be summarizing the response
-- See [GET-ITEM-LINK-TOOL.md](./GET-ITEM-LINK-TOOL.md) for more details
 
 ## License
 

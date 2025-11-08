@@ -2,6 +2,8 @@
 
 ![Work in Progress](https://img.shields.io/badge/status-work%20in%20progress-yellow)
 
+![alt text](screenshots/asset-search.png)
+
 A Model Context Protocol (MCP) server for interacting with [Homebox](https://homebox.software/), a self-hosted inventory management system.
 
 **Source Project:** [Homebox](https://github.com/sysadminsmedia/homebox) | [Documentation](https://homebox.software/en/)
@@ -91,13 +93,27 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 
 **Note:** The MCP server automatically handles login and token refresh. You don't need to manually generate API tokens.
 
-### For Claude Desktop
+## Screenshots
 
-Add this to your Claude Desktop configuration file:
+Asset search:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-**Linux**: `~/.config/Claude/claude_desktop_config.json`
+![alt text](screenshots/asset-search.png)
+
+Env variable configuration:
+
+![alt text](screenshots/env-variables.png)
+
+Env variables for LAN and WAN instance URLs:
+
+![alt text](screenshots/lan-or-wan-env-variables.png)
+
+MCP tools (LM Studio, Qwen 3)
+
+![alt text](screenshots/mcp-toolbox.png)
+
+Retrieve asset URL from asset ID:
+
+![alt text](screenshots/retrieve-asset-likn-from-id.png)
 
 #### LAN Only (default)
 ```json

@@ -2,7 +2,7 @@
 
 ![Work in Progress](https://img.shields.io/badge/status-work%20in%20progress-yellow)
 
-![alt text](screenshots/asset-search.png)
+![alt text](docs/screenshots/asset-search.png)
 
 A Model Context Protocol (MCP) server for interacting with [Homebox](https://homebox.software/), a self-hosted inventory management system.
 
@@ -12,7 +12,7 @@ A Model Context Protocol (MCP) server for interacting with [Homebox](https://hom
 
 This MCP server enables AI assistants (like Claude or LM Studio) to interact with your Homebox instance using natural language. You can manage your inventory, create items, update locations, search for items, and more.
 
-**Want to use this with local AI?** Check out our [Local AI Stack Example](examples/local-ai-stack/README.md) for detailed setup instructions using LM Studio + Qwen 3 8B or other local LLMs with function calling support.
+**Want to use this with local AI?** Check out our [Local AI Stack Example](docs/examples/local-ai-stack/README.md) for detailed setup instructions using LM Studio + Qwen 3 8B or other local LLMs with function calling support.
 
 ## Features
 
@@ -112,23 +112,37 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 
 ## Asset search:
 
-![alt text](screenshots/asset-search.png)
+![alt text](docs/screenshots/asset-search.png)
 
 ## Env variable configuration:
 
-![alt text](screenshots/env-variables.png)
+![alt text](docs/screenshots/env-variables.png)
 
 ## Env variables for LAN and WAN instance URLs:
 
-![alt text](screenshots/lan-or-wan-env-variables.png)
+![alt text](docs/screenshots/lan-or-wan-env-variables.png)
 
 ## MCP tools (LM Studio, Qwen 3)
 
-![alt text](screenshots/mcp-toolbox.png)
+![alt text](docs/screenshots/mcp-toolbox.png)
 
 ## Retrieve asset URL from asset ID:
 
-![alt text](screenshots/retrieve-asset-likn-from-id.png)
+![alt text](docs/screenshots/retrieve-asset-likn-from-id.png)
+
+---
+
+# Claude Code Demo
+
+Configure by adding array with env variables to `.mcp.json` (note the trailing dot)
+
+![alt text](docs/screenshots/claude-code/config.png)
+
+![alt text](docs/screenshots/claude-code/1.png)
+
+![alt text](docs/screenshots/claude-code/2.png)
+
+---
 
 # MCP Configuration
 
@@ -343,8 +357,9 @@ The server will return a direct clickable link like:
 
 For complete instructions on using this MCP server with local AI models, see:
 
-- **[Local AI Stack Setup Guide](examples/local-ai-stack/README.md)** - Complete setup for LM Studio + Qwen 3 8B
-- **[Client Configuration Examples](examples/local-ai-stack/client-config-examples.md)** - Configurations for Continue.dev, Cline, Ollama, and more
+- **[Local AI Stack Setup Guide](docs/examples/local-ai-stack/README.md)** - Complete setup for LM Studio + Qwen 3 8B
+- **[Client Configuration Examples](docs/examples/local-ai-stack/client-config-examples.md)** - Configurations for Continue.dev, Cline, Ollama, and more
+- **[System Prompt for AI Models](docs/setup/system-prompt.md)** - Recommended system prompt for AI assistants that includes API fallback instructions
 
 Quick summary: Any local LLM with function calling support works (Qwen 3 8B, Llama 3.1, Mistral, etc.).
 
@@ -388,8 +403,8 @@ npm start
 
 This MCP server is built on the Homebox API. For full API documentation, see:
 - [Homebox API Documentation](https://homebox.software/en/api/)
-- [Complete API Endpoints Reference](api-reference/endpoints-table.md) - Full list of all 64 available API endpoints
-- Local API docs in `api-docs/` directory
+- [Complete API Endpoints Reference](docs/api-reference/endpoints-table.md) - Full list of all 64 available API endpoints
+- Local API docs in `docs/api-reference/` directory
 
 **Note:** The current MCP implementation provides tools for core functionality (items, locations, labels). Additional functionality planned includes:
 - **Maintenance Tracking** - Full CRUD operations for maintenance logs and entries
@@ -399,7 +414,7 @@ This MCP server is built on the Homebox API. For full API documentation, see:
 - **QR Code & Label Generation** - Generate QR codes and printable labels for assets, items, and locations
 - **Notifiers** - Configure and test notification systems
 
-See the [endpoints reference](api-reference/endpoints-table.md) for all available API capabilities.
+See the [endpoints reference](docs/api-reference/endpoints-table.md) for all available API capabilities.
 
 ## Understanding Asset IDs vs UUIDs
 
@@ -423,7 +438,7 @@ When you search for "003-168":
 - The URL is built using the UUID: http://10.0.0.4:7745/item/cd8dee2f-9f5b-4f10-a05b-c952c1deafc5
 ```
 
-**Database Schema:** For detailed database schema information and ERD diagrams, see the `db-schema/` directory which includes both PDF and PNG exports of the full schema and items-specific schema.
+**Database Schema:** For detailed database schema information and ERD diagrams, see the `docs/db-schema/` directory which includes both PDF and PNG exports of the full schema and items-specific schema.
 
 ## Troubleshooting
 

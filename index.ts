@@ -8,8 +8,13 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { config } from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
-config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+config({ path: join(__dirname, "../.env"), override: true });
 
 // API Configuration
 const HOMEBOX_LOCAL_URL = process.env.HOMEBOX_LOCAL_URL || "http://10.0.0.4:7745";
@@ -145,6 +150,10 @@ function generateLocationUrl(locationId: string): string {
   return `${HOMEBOX_WEB_URL}/location/${locationId}`;
 }
 
+function generateLabelUrl(labelId: string): string {
+  return `${HOMEBOX_WEB_URL}/label/${labelId}`;
+}
+
 // Helper function to format item response with URL
 function formatItemResponse(item: any): string {
   const itemUrl = generateItemUrl(item.id);
@@ -155,6 +164,10 @@ function formatItemResponse(item: any): string {
   if (item.description) summary += `Description: ${item.description}\n`;
   if (item.quantity) summary += `Quantity: ${item.quantity}\n`;
   if (item.location?.name) summary += `Location: ${item.location.name}\n`;
+  if (item.parent?.name) {
+    const parentUrl = generateItemUrl(item.parent.id);
+    summary += `Parent Item: ${item.parent.name} (🔗 ${parentUrl})\n`;
+  }
   if (item.manufacturer) summary += `Manufacturer: ${item.manufacturer}\n`;
   if (item.modelNumber) summary += `Model: ${item.modelNumber}\n`;
   if (item.serialNumber) summary += `Serial: ${item.serialNumber}\n`;
@@ -191,6 +204,10 @@ function formatItemsList(items: any[]): string {
     if (item.assetId) line += ` (Asset ID: ${item.assetId})`;
     line += `\n  ID: ${item.id}`;
     if (item.location?.name) line += `\n  Location: ${item.location.name}`;
+    if (item.parent?.name) {
+      const parentUrl = generateItemUrl(item.parent.id);
+      line += `\n  Parent: ${item.parent.name} (🔗 ${parentUrl})`;
+    }
     line += `\n  🔗 Direct Link: ${itemUrl}`;
     return line;
   }).join('\n\n');
@@ -383,6 +400,10 @@ const tools: Tool[] = [
           type: "string",
           description: "Location ID (UUID) where the item is stored",
         },
+        parentId: {
+          type: "string",
+          description: "Parent item ID (UUID) if this item belongs to another item (e.g., item in a box)",
+        },
         labelIds: {
           type: "array",
           items: { type: "string" },
@@ -441,6 +462,10 @@ const tools: Tool[] = [
         locationId: {
           type: "string",
           description: "Location ID (UUID) where the item is stored",
+        },
+        parentId: {
+          type: "string",
+          description: "Parent item ID (UUID) if this item belongs to another item. Set to null to remove parent relationship.",
         },
         labelIds: {
           type: "array",
@@ -662,6 +687,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
 
         if (args.description) body.description = String(args.description);
         if (args.locationId) body.locationId = String(args.locationId);
+        if (args.parentId) body.parentId = String(args.parentId);
         if (args.labelIds) body.labelIds = args.labelIds;
         if (args.quantity !== undefined) body.quantity = Number(args.quantity);
         if (args.serialNumber) body.serialNumber = String(args.serialNumber);
@@ -690,6 +716,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
         if (args.name) body.name = String(args.name);
         if (args.description) body.description = String(args.description);
         if (args.locationId) body.locationId = String(args.locationId);
+        if (args.parentId !== undefined) {
+          // Allow setting parentId to null to remove parent relationship
+          body.parentId = args.parentId === null ? null : String(args.parentId);
+        }
         if (args.labelIds) body.labelIds = args.labelIds;
         if (args.quantity !== undefined)
           body.quantity = Number(args.quantity);

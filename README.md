@@ -20,10 +20,11 @@ This MCP server enables AI assistants (like Claude or LM Studio) to interact wit
   - List all inventory items with filtering and pagination
   - Get detailed information about specific items
   - Create new inventory items
-  - Update existing items
+  - Update existing items (including parent-child relationships)
   - Delete items
   - Search items by query
-  - Automatic web links for all items
+  - Parent-child item relationships (e.g., items stored inside other items)
+  - Automatic web links for all items and parent items
 
 - **Location Management**
   - List all storage locations
@@ -267,10 +268,13 @@ The server will return a direct clickable link like:
 ### Creating Items
 > "Create a new item called 'Dell Monitor' in my office location"
 > "Add a new inventory item: Samsung SSD 1TB, model 870 EVO, serial number ABC123"
+> "Create a new item called 'USB Cable' inside the electronics box" (requires parent item ID)
 
 ### Updating Items
 > "Update the quantity of item [ID] to 5"
 > "Change the location of my laptop to the office"
+> "Set the parent item of [item ID] to [parent item ID]"
+> "Remove the parent item from [item ID]" (set parentId to null)
 
 ### Managing Locations
 > "List all my storage locations"
@@ -333,7 +337,6 @@ This MCP server is built on the Homebox API. For full API documentation, see:
 - Local API docs in `api-docs/` directory
 
 **Note:** The current MCP implementation provides tools for core functionality (items, locations, labels). Additional functionality planned includes:
-- **Parent/Child Asset Management** - Assign and remove parent assets to create hierarchical relationships
 - **Maintenance Tracking** - Full CRUD operations for maintenance logs and entries
 - **Attachments Management** - Upload, update, and delete item attachments
 - **Custom Fields** - Manage custom field names and values

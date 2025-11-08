@@ -1,5 +1,5 @@
 {
-  "name": "homebox-mcp-server",
+  "name": "homebox-mcp",
   "version": "1.0.0",
   "description": "MCP server for Homebox inventory management system",
   "type": "module",
@@ -10,19 +10,32 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danielrosehill/Homebox-MCP-1125.git"
+    "url": "git+https://github.com/danielrosehill/Homebox-MCP-Server.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "homebox",
+    "inventory",
+    "home-inventory",
+    "model-context-protocol"
+  ],
+  "author": "Daniel Rosehill <public@danielrosehill.com>",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/danielrosehill/Homebox-MCP-1125/issues"
+    "url": "https://github.com/danielrosehill/Homebox-MCP-Server/issues"
   },
-  "homepage": "https://github.com/danielrosehill/Homebox-MCP-1125#readme",
+  "homepage": "https://github.com/danielrosehill/Homebox-MCP-Server#readme",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.21.1",
     "dotenv": "^17.2.3",

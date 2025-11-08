@@ -49,6 +49,18 @@ This MCP server enables AI assistants (like Claude or LM Studio) to interact wit
 
 ## Installation
 
+### Option 1: Install from npm (Recommended)
+
+The easiest way to get started is to install the package directly from npm:
+
+```bash
+npm install -g homebox-mcp
+```
+
+**Note:** This is currently a proof-of-concept/work in progress. Features may change and improvements are ongoing.
+
+### Option 2: Install from Source
+
 1. Clone this repository:
 ```bash
 git clone https://github.com/danielrosehill/Homebox-MCP-1125.git
@@ -120,7 +132,48 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 
 # MCP Configuration
 
-## LAN Only (default)
+## Using npm Package (Recommended)
+
+### LAN Only (default)
+
+```json
+{
+  "mcpServers": {
+    "homebox": {
+      "command": "npx",
+      "args": ["homebox-mcp"],
+      "env": {
+        "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
+        "HOMEBOX_USERNAME": "your_email@example.com",
+        "HOMEBOX_PASSWORD": "your_password"
+      }
+    }
+  }
+}
+```
+
+### Alternative: Using Global Install
+
+If you installed globally with `npm install -g homebox-mcp`:
+
+```json
+{
+  "mcpServers": {
+    "homebox": {
+      "command": "homebox-mcp",
+      "env": {
+        "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
+        "HOMEBOX_USERNAME": "your_email@example.com",
+        "HOMEBOX_PASSWORD": "your_password"
+      }
+    }
+  }
+}
+```
+
+## Using Source Installation
+
+If you cloned the repository and built from source:
 
 ```json
 {
@@ -140,18 +193,20 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 
 ## WAN Links (automatic when WAN URL is provided)
 
-Given that Homebox is a home inventory system  I figured that using the LAN for API calls would be preferred where avilable. Many folks also use WAN URLs, however, and use those to bind to stickers/NFC tags so that they can be read when we're not on the LAN.
+Given that Homebox is a home inventory system, using the LAN for API calls is preferred where available. Many folks also use WAN URLs to bind to stickers/NFC tags so that they can be read when not on the LAN.
 
-For that reason, I added env parameters for both the WAN and LAN  URLs and booleans for the preferred URL construction pattern for asset links.
+For that reason, env parameters for both WAN and LAN URLs are provided, along with booleans for the preferred URL construction pattern for asset links.
 
-My thinking was that this would provide users with flexibility and accommodate the needs of users like me who want LAN for API but WAN for link presentation:
+This provides flexibility and accommodates users who want LAN for API but WAN for link presentation:
+
+### Using npx (Recommended)
 
 ```json
 {
   "mcpServers": {
     "homebox": {
-      "command": "node",
-      "args": ["/path/to/Homebox-MCP-1125/dist/index.js"],
+      "command": "npx",
+      "args": ["homebox-mcp"],
       "env": {
         "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
         "HOMEBOX_WAN_URL": "https://homebox.yourdomain.com",
@@ -168,8 +223,8 @@ My thinking was that this would provide users with flexibility and accommodate t
 {
   "mcpServers": {
     "homebox": {
-      "command": "node",
-      "args": ["/path/to/Homebox-MCP-1125/dist/index.js"],
+      "command": "npx",
+      "args": ["homebox-mcp"],
       "env": {
         "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
         "HOMEBOX_WAN_URL": "https://homebox.yourdomain.com",
@@ -187,8 +242,8 @@ My thinking was that this would provide users with flexibility and accommodate t
 {
   "mcpServers": {
     "homebox": {
-      "command": "node",
-      "args": ["/path/to/Homebox-MCP-1125/dist/index.js"],
+      "command": "npx",
+      "args": ["homebox-mcp"],
       "env": {
         "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
         "HOMEBOX_WAN_URL": "https://homebox.yourdomain.com",
@@ -207,8 +262,8 @@ My thinking was that this would provide users with flexibility and accommodate t
 2. Go to Settings → MCP Servers
 3. Add a new server with the following configuration:
    - **Name**: Homebox
-   - **Command**: `node`
-   - **Args**: `/path/to/Homebox-MCP-1125/dist/index.js`
+   - **Command**: `npx` (or `homebox-mcp` if globally installed)
+   - **Args**: `homebox-mcp` (if using npx; leave empty if using global install)
    - **Environment Variables**:
      - `HOMEBOX_LOCAL_URL`: `http://10.0.0.4:7745`
      - `HOMEBOX_WAN_URL`: `https://homebox.yourdomain.com` (optional, leave empty for LAN-only)
@@ -219,14 +274,14 @@ My thinking was that this would provide users with flexibility and accommodate t
 
 ### For Other MCP Clients
 
-Use the `mcp.json` configuration file included in this repository as a reference:
+Use the following configuration as a reference:
 
 ```json
 {
   "mcpServers": {
     "homebox": {
-      "command": "node",
-      "args": ["/path/to/Homebox-MCP-1125/dist/index.js"],
+      "command": "npx",
+      "args": ["homebox-mcp"],
       "env": {
         "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
         "HOMEBOX_WAN_URL": "https://homebox.yourdomain.com",

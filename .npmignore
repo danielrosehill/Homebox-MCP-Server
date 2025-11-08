@@ -1,0 +1,23 @@
+# Source files
+index.ts
+tsconfig.json
+
+# Development files
+.env
+.env.example
+notes.md
+
+# Directories
+api-reference/
+db-schema/
+examples/
+screenshots/
+setup/
+.claude/
+
+# Git
+.git/
+.gitignore
+
+# Node
+node_modules/

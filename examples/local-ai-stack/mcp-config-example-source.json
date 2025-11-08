@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "homebox": {
-      "command": "npx",
+      "command": "node",
       "args": [
-        "homebox-mcp"
+        "/path/to/homebox-mcp-server/dist/index.js"
       ],
       "env": {
         "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",

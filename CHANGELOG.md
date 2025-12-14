@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-12-15
+
+### Added
+- **API Key Authentication** - New `HOMEBOX_API_KEY` environment variable for persistent API key authentication. This is now the recommended authentication method.
+  - API keys don't require token refresh, providing more reliable authentication
+  - If both API key and username/password are provided, API key takes precedence
+  - Simpler configuration with fewer environment variables needed
+
+### Changed
+- Authentication is now flexible: use either `HOMEBOX_API_KEY` (recommended) or `HOMEBOX_USERNAME` + `HOMEBOX_PASSWORD`
+- Updated documentation with API key configuration examples for all MCP clients
+
 ## [1.1.1] - 2025-11-08
 
 ### Added

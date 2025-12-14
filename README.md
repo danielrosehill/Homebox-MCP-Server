@@ -45,7 +45,7 @@ This MCP server enables AI assistants (like Claude or LM Studio) to interact wit
 
 - Node.js 18+ or later
 - A running Homebox instance
-- Homebox username and password
+- Either a Homebox API key (recommended) OR username and password
 
 ## Installation
 
@@ -106,8 +106,13 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 - `HOMEBOX_WAN_URL` - (Optional) WAN/public URL for external access (e.g., `https://homebox.yourdomain.com`)
 - `USE_LAN_API` - (Optional) Use LAN for API calls (default: `true`). Set to `false` to use WAN for API
 - `LAN_LINKS` - (Optional) Use LAN for display links (default: `false`). Set to `true` to force LAN links
-- `HOMEBOX_USERNAME` - Your Homebox username (email)
-- `HOMEBOX_PASSWORD` - Your Homebox password
+
+**Authentication (choose one):**
+- `HOMEBOX_API_KEY` - (Recommended) Persistent API key from Homebox. If provided, username/password are ignored.
+- `HOMEBOX_USERNAME` - Your Homebox username (email) - only needed if not using API key
+- `HOMEBOX_PASSWORD` - Your Homebox password - only needed if not using API key
+
+> **Note:** If both `HOMEBOX_API_KEY` and username/password are provided, the API key takes precedence. API keys are recommended as they don't require token refresh and provide more reliable authentication.
 
 **URL Selection Logic:**
 
@@ -125,7 +130,7 @@ The MCP server supports flexible URL configuration for both LAN and WAN access:
 - Web links default to WAN for shareability (configurable with `LAN_LINKS`)
 - This gives you full control over which URL is used for each purpose
 
-**Note:** The MCP server automatically handles login and token refresh. You don't need to manually generate API tokens.
+**Note:** When using username/password authentication, the MCP server automatically handles login and token refresh. When using an API key, no token refresh is needed.
 
 # Screenshots For POC
 
@@ -177,7 +182,24 @@ Configure by adding array with env variables to `.mcp.json` (note the trailing d
 
 ## Using npm Package (Recommended)
 
-### LAN Only (default)
+### With API Key (Recommended)
+
+```json
+{
+  "mcpServers": {
+    "homebox": {
+      "command": "npx",
+      "args": ["homebox-mcp"],
+      "env": {
+        "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
+        "HOMEBOX_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+### With Username/Password (LAN Only)
 
 ```json
 {
@@ -198,6 +220,22 @@ Configure by adding array with env variables to `.mcp.json` (note the trailing d
 ### Alternative: Using Global Install
 
 If you installed globally with `npm install -g homebox-mcp`:
+
+```json
+{
+  "mcpServers": {
+    "homebox": {
+      "command": "homebox-mcp",
+      "env": {
+        "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
+        "HOMEBOX_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Or with username/password:
 
 ```json
 {
@@ -312,8 +350,9 @@ This provides flexibility and accommodates users who want LAN for API but WAN fo
      - `HOMEBOX_WAN_URL`: `https://homebox.yourdomain.com` (optional, leave empty for LAN-only)
      - `USE_LAN_API`: `true` (optional, default: true - use LAN for API calls)
      - `LAN_LINKS`: `false` (optional, default: false - use WAN for links when available)
-     - `HOMEBOX_USERNAME`: `your_email@example.com`
-     - `HOMEBOX_PASSWORD`: `your_password`
+     - **Authentication (choose one):**
+       - `HOMEBOX_API_KEY`: `your_api_key_here` (recommended)
+       - OR both `HOMEBOX_USERNAME` and `HOMEBOX_PASSWORD`
 
 ### For Other MCP Clients
 
@@ -328,8 +367,7 @@ Use the following configuration as a reference:
       "env": {
         "HOMEBOX_LOCAL_URL": "http://10.0.0.4:7745",
         "HOMEBOX_WAN_URL": "https://homebox.yourdomain.com",
-        "HOMEBOX_USERNAME": "your_email@example.com",
-        "HOMEBOX_PASSWORD": "your_password"
+        "HOMEBOX_API_KEY": "your_api_key_here"
       }
     }
   }

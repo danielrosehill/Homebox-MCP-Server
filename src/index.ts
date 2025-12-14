@@ -44,20 +44,25 @@ if (LAN_LINKS) {
   urlMode = "local (no WAN URL)";
 }
 
+const HOMEBOX_API_KEY = process.env.HOMEBOX_API_KEY?.trim();
 const HOMEBOX_USERNAME = process.env.HOMEBOX_USERNAME;
 const HOMEBOX_PASSWORD = process.env.HOMEBOX_PASSWORD;
 
-if (!HOMEBOX_USERNAME || !HOMEBOX_PASSWORD) {
-  console.error("Error: HOMEBOX_USERNAME and HOMEBOX_PASSWORD environment variables are required");
+// Determine authentication mode: prefer API key if provided
+const useApiKey = !!HOMEBOX_API_KEY;
+
+if (!useApiKey && (!HOMEBOX_USERNAME || !HOMEBOX_PASSWORD)) {
+  console.error("Error: Either HOMEBOX_API_KEY or both HOMEBOX_USERNAME and HOMEBOX_PASSWORD environment variables are required");
   process.exit(1);
 }
 
 console.error(`Using API URL: ${HOMEBOX_API_URL} (USE_LAN_API=${USE_LAN_API})`);
 console.error(`Using Web URL for links: ${HOMEBOX_WEB_URL} (${urlMode})`);
+console.error(`Authentication mode: ${useApiKey ? 'API Key' : 'Username/Password'}`);
 
 // Token management
-let accessToken: string | null = null;
-let tokenExpiry: Date | null = null;
+let accessToken: string | null = useApiKey ? HOMEBOX_API_KEY! : null;
+let tokenExpiry: Date | null = useApiKey ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null; // API keys don't expire (set far future)
 
 // Login to Homebox and get access token
 async function login(): Promise<void> {
@@ -129,6 +134,11 @@ async function refreshToken(): Promise<void> {
 
 // Ensure we have a valid token
 async function ensureValidToken(): Promise<void> {
+  // API keys don't need refresh
+  if (useApiKey) {
+    return;
+  }
+
   if (!accessToken || !tokenExpiry) {
     await login();
     return;

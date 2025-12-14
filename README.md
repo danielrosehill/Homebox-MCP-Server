@@ -1,5 +1,8 @@
 # Homebox MCP Server
 
+[![npm version](https://img.shields.io/npm/v/homebox-mcp.svg)](https://www.npmjs.com/package/homebox-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/homebox-mcp.svg)](https://www.npmjs.com/package/homebox-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Work in Progress](https://img.shields.io/badge/status-work%20in%20progress-yellow)
 
 ![alt text](docs/screenshots/asset-search.png)

@@ -719,6 +719,97 @@ const tools: Tool[] = [
       required: ["itemId", "fieldName"],
     },
   },
+  {
+    name: "get_locations_tree",
+    description:
+      "Get the hierarchical tree structure of all locations in Homebox. Shows parent-child relationships between locations.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  },
+  {
+    name: "get_location",
+    description:
+      "Get detailed information about a specific location by ID, including its children and parent.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "Location ID (UUID)",
+        },
+      },
+      required: ["id"],
+    },
+  },
+  {
+    name: "update_location",
+    description: "Update an existing location's name, description, or parent.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "Location ID (UUID)",
+        },
+        name: {
+          type: "string",
+          description: "New location name",
+        },
+        description: {
+          type: "string",
+          description: "New location description",
+        },
+        parentId: {
+          type: "string",
+          description: "New parent location ID (UUID). Set to null to remove parent.",
+        },
+      },
+      required: ["id"],
+    },
+  },
+  {
+    name: "update_label",
+    description: "Update an existing label's name, description, or color.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "Label ID (UUID)",
+        },
+        name: {
+          type: "string",
+          description: "New label name",
+        },
+        description: {
+          type: "string",
+          description: "New label description",
+        },
+        color: {
+          type: "string",
+          description: "New label color (hex code)",
+        },
+      },
+      required: ["id"],
+    },
+  },
+  {
+    name: "search_barcode",
+    description:
+      "Search for product information using a barcode (EAN/UPC). Returns product details from barcode lookup services.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        barcode: {
+          type: "string",
+          description: "The barcode (EAN/UPC) to search for",
+        },
+      },
+      required: ["barcode"],
+    },
+  },
 ];
 
 // Handle tool listing
@@ -1260,6 +1351,157 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
             {
               type: "text",
               text: `Custom field "${fieldName}" removed successfully!\n\n${formatItemResponse(result)}`,
+            },
+          ],
+        };
+      }
+
+      case "get_locations_tree": {
+        // Always request without items for cleaner hierarchy view
+        const result = await apiRequest("/v1/locations/tree?withItems=false", "GET");
+
+        // Format the tree for better readability
+        function formatTree(items: any[], indent: number = 0): string {
+          if (!items || items.length === 0) return "";
+
+          return items.map(item => {
+            const prefix = "  ".repeat(indent) + (indent > 0 ? "└─ " : "");
+            const locationUrl = generateLocationUrl(item.id);
+            let line = `${prefix}📁 ${item.name} (${item.id})\n`;
+            line += `${"  ".repeat(indent)}   🔗 ${locationUrl}`;
+
+            if (item.children && item.children.length > 0) {
+              line += "\n" + formatTree(item.children, indent + 1);
+            }
+            return line;
+          }).join("\n\n");
+        }
+
+        const formattedTree = formatTree(result);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Location Hierarchy:\n\n${formattedTree}\n\nFull data:\n${JSON.stringify(result, null, 2)}`,
+            },
+          ],
+        };
+      }
+
+      case "get_location": {
+        const locationId = String(args.id);
+        const result = await apiRequest(`/v1/locations/${locationId}`, "GET");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatLocationResponse(result),
+            },
+          ],
+        };
+      }
+
+      case "update_location": {
+        const locationId = String(args.id);
+
+        // Get the current location details first
+        const currentLocation = await apiRequest(`/v1/locations/${locationId}`, "GET");
+
+        // Build the update body
+        const body: any = {
+          id: currentLocation.id,
+          name: args.name !== undefined ? String(args.name) : currentLocation.name,
+          description: args.description !== undefined ? String(args.description) : (currentLocation.description || ""),
+        };
+
+        // Handle parentId - can be set, changed, or removed (null)
+        if (args.parentId !== undefined) {
+          body.parentId = args.parentId === null ? null : String(args.parentId);
+        } else if (currentLocation.parent) {
+          body.parentId = currentLocation.parent.id;
+        } else {
+          body.parentId = null;
+        }
+
+        const result = await apiRequest(`/v1/locations/${locationId}`, "PUT", body);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Location updated successfully!\n\n${formatLocationResponse(result)}`,
+            },
+          ],
+        };
+      }
+
+      case "update_label": {
+        const labelId = String(args.id);
+
+        // Get the current label details first
+        const currentLabel = await apiRequest(`/v1/labels/${labelId}`, "GET");
+
+        // Build the update body
+        const body: any = {
+          id: currentLabel.id,
+          name: args.name !== undefined ? String(args.name) : currentLabel.name,
+          description: args.description !== undefined ? String(args.description) : (currentLabel.description || ""),
+          color: args.color !== undefined ? String(args.color) : (currentLabel.color || ""),
+        };
+
+        const result = await apiRequest(`/v1/labels/${labelId}`, "PUT", body);
+
+        const labelUrl = generateLabelUrl(result.id);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Label updated successfully!\n\nLabel: ${result.name}\nDescription: ${result.description || "(none)"}\nColor: ${result.color || "(none)"}\n🔗 Direct Link: ${labelUrl}\n\nFull details:\n${JSON.stringify(result, null, 2)}`,
+            },
+          ],
+        };
+      }
+
+      case "search_barcode": {
+        const barcode = String(args.barcode);
+
+        const params = new URLSearchParams();
+        params.append("data", barcode);
+
+        const result = await apiRequest(`/v1/products/search-from-barcode?${params.toString()}`, "GET");
+
+        if (!result || result.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `No products found for barcode: ${barcode}`,
+              },
+            ],
+          };
+        }
+
+        // Format the barcode search results
+        const formattedResults = result.map((product: any, index: number) => {
+          let text = `${index + 1}. `;
+          if (product.item?.name) text += `${product.item.name}\n`;
+          if (product.manufacturer) text += `   Manufacturer: ${product.manufacturer}\n`;
+          if (product.modelNumber) text += `   Model: ${product.modelNumber}\n`;
+          if (product.barcode) text += `   Barcode: ${product.barcode}\n`;
+          if (product.notes) text += `   Notes: ${product.notes}\n`;
+          if (product.search_engine_name) text += `   Source: ${product.search_engine_name}\n`;
+          if (product.imageURL) text += `   Image: ${product.imageURL}\n`;
+          return text;
+        }).join("\n");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Found ${result.length} product(s) for barcode ${barcode}:\n\n${formattedResults}\n\nFull data:\n${JSON.stringify(result, null, 2)}`,
             },
           ],
         };

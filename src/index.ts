@@ -9,7 +9,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { config } from "dotenv";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname, join, basename } from "path";
+import { readFile } from "fs/promises";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -320,6 +321,87 @@ async function apiRequest(
   }
 
   const response = await fetch(url, options);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `API request failed: ${response.status} ${response.statusText} - ${errorText}`
+    );
+  }
+
+  return response.json();
+}
+
+// Helper function to get file bytes from URL or file path
+async function getFileBytes(fileLocation: string): Promise<{ buffer: ArrayBuffer; filename: string; mimeType: string }> {
+  const isUrl = fileLocation.startsWith('http://') || fileLocation.startsWith('https://');
+  
+  let buffer: ArrayBuffer;
+  let filename: string;
+  
+  if (isUrl) {
+    // Fetch from URL
+    const response = await fetch(fileLocation);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file from URL: ${response.status} ${response.statusText}`);
+    }
+    buffer = await response.arrayBuffer();
+    
+    // Extract filename from URL
+    const url = new URL(fileLocation);
+    filename = basename(url.pathname) || 'attachment';
+  } else {
+    // Read from filesystem
+    const nodeBuffer = await readFile(fileLocation);
+    buffer = nodeBuffer.buffer.slice(nodeBuffer.byteOffset, nodeBuffer.byteOffset + nodeBuffer.byteLength);
+    filename = basename(fileLocation);
+  }
+  
+  // Determine MIME type from extension
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  const mimeTypes: Record<string, string> = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'pdf': 'application/pdf',
+    'txt': 'text/plain',
+    'doc': 'application/msword',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xls': 'application/vnd.ms-excel',
+    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'json': 'application/json',
+    'xml': 'application/xml',
+    'zip': 'application/zip',
+    'mp3': 'audio/mpeg',
+    'mp4': 'video/mp4',
+    'mov': 'video/quicktime',
+    'avi': 'video/x-msvideo',
+  };
+  const mimeType = mimeTypes[ext] || 'application/octet-stream';
+  
+  return { buffer, filename, mimeType };
+}
+
+// Helper function to make multipart form data API requests (for file uploads)
+async function apiRequestMultipart(
+  endpoint: string,
+  formData: FormData
+): Promise<any> {
+  await ensureValidToken();
+
+  const url = `${HOMEBOX_API_BASE}${endpoint}`;
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+    // Note: Don't set Content-Type for FormData - fetch will set it automatically with boundary
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -808,6 +890,25 @@ const tools: Tool[] = [
         },
       },
       required: ["barcode"],
+    },
+  },
+  {
+    name: "add_item_attachment",
+    description:
+      "Add an attachment (image, document, etc.) to an inventory item. The file_location can be either a URL (http:// or https://) to fetch the file from, or an absolute file path on the local filesystem (e.g., '/mnt/images/photo.png'). The filename is automatically extracted from the URL or path. Supported file types include images (jpg, png, gif, webp), documents (pdf, doc, docx), and other common formats.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "Item ID (UUID) to add the attachment to",
+        },
+        file_location: {
+          type: "string",
+          description: "URL (http:// or https://) to fetch the file from, OR an absolute file path on the local filesystem (e.g., '/mnt/photos/image.png', '/home/user/documents/manual.pdf')",
+        },
+      },
+      required: ["id", "file_location"],
     },
   },
 ];
@@ -1502,6 +1603,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
             {
               type: "text",
               text: `Found ${result.length} product(s) for barcode ${barcode}:\n\n${formattedResults}\n\nFull data:\n${JSON.stringify(result, null, 2)}`,
+            },
+          ],
+        };
+      }
+
+      case "add_item_attachment": {
+        const itemId = String(args.id);
+        const fileLocation = String(args.file_location);
+
+        // Get file bytes from URL or filesystem
+        const { buffer, filename, mimeType } = await getFileBytes(fileLocation);
+
+        // Create FormData with the file
+        const formData = new FormData();
+        const blob = new Blob([buffer], { type: mimeType });
+        formData.append("file", blob, filename);
+        formData.append("name", filename);
+        formData.append("type", "attachment");
+
+        const result = await apiRequestMultipart(`/v1/items/${itemId}/attachments`, formData);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Attachment "${filename}" added successfully to item!\n\n${formatItemResponse(result)}`,
             },
           ],
         };
